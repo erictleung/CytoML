@@ -66,7 +66,7 @@ void gh_accessor_test(GatingHierarchy& gh){
 			VertexID u=*it;
 			nodeProperties &node=gh.getNodeProperty(u);
 			cout<<u<<"."<<node.getName()<<":";
-			cout<<node.getStats(false)["count"]<<endl;
+			cout<<node.getStats("count", false)<<endl;
 			if(u!=ROOTNODE)
 			{
 				gatePtr g=node.getGate();
@@ -147,11 +147,11 @@ void gh_counts(GatingHierarchy & gh,vector<bool> &isEqual, const float tolerance
 		{
 //			if(u!=ROOTNODE){
 				nodeProperties &node=gh.getNodeProperty(u);
-				int flowJoCount = node.getStats(false)["count"];
+				int flowJoCount = node.getStats("count", false);
 				if(flowJoCount != -1) //skip the unrecorded flowJo counts
 				{
 
-					int myCount = node.getStats(true)["count"];
+					int myCount = node.getStats("count", true);
 					cout<<u<<"."<<node.getName()<<":";
 					cout<< flowJoCount;
 					cout<<"("<<myCount<<") "<< "cv = ";

@@ -990,9 +990,9 @@ public:
 
 		np.setName("root");
 
-		POPSTATS fjStats;
-		fjStats["count"]= get_event_count(node);
-		np.setStats(fjStats,false);
+		popStatsPtr s(new StatsCount());
+		s->set_value(get_event_count(node),WSSTAT);
+		np.setStats("count", s);
 
 
 	}
@@ -1007,11 +1007,13 @@ public:
 		if(g_loglevel>=POPULATION_LEVEL)
 				COUT<<"parse the population Node:"<<np.getName()<<endl;
 		//add pop counts
-		POPSTATS fjStats;
 		string sCount = node.getProperty("count");
 		//set the empty stats to -1
-		fjStats["count"] = sCount.empty()?-1:atoi(sCount.c_str());
-		np.setStats(fjStats,false);
+		popStatsPtr s(new StatsCount());
+		auto cnt = sCount.empty()?-1:atoi(sCount.c_str());
+		s->set_value(cnt, WSSTAT);
+		np.setStats("count", s);
+
 
 		try
 		{
