@@ -137,7 +137,10 @@ void gh_gating(GatingHierarchy & gh,bool is_fix_slash_in_channel_name, bool isH5
 //	gh.release_fdata_cache(true);
 
 }
-void gh_counts(GatingHierarchy & gh,vector<bool> &isEqual, const float tolerance, const vector<VertexID> skipPops){
+void gh_counts(GatingHierarchy & gh,vector<bool> &isEqual
+		, const float tolerance
+		, const vector<VertexID> skipPops
+		, const string & statType = "count"){
 	cout<<endl<<"flowJo(flowcore) counts after gating"<<endl;
 	VertexID_vec vertices=gh.getVertices(0);
 	for(VertexID_vec::iterator it=vertices.begin();it!=vertices.end();it++)
@@ -147,41 +150,48 @@ void gh_counts(GatingHierarchy & gh,vector<bool> &isEqual, const float tolerance
 		{
 //			if(u!=ROOTNODE){
 				nodeProperties &node=gh.getNodeProperty(u);
-				int flowJoCount = node.getStats("count", false);
-				if(flowJoCount != -1) //skip the unrecorded flowJo counts
+				cout<<u<<"."<<node.getName()<< endl;;
+				auto stat = node.getStats();
+				for(auto s : stat)
 				{
 
-					int myCount = node.getStats("count", true);
-					cout<<u<<"."<<node.getName()<<":";
-					cout<< flowJoCount;
-					cout<<"("<<myCount<<") "<< "cv = ";
-
-					bool thisEqual;
-					float thisCV ;
-					float thisTol = tolerance;
-					if(flowJoCount == myCount){
-						thisEqual = true;
-						thisCV = 0;
-					}
-					else
+					auto sn = s.first;
+					auto ps = s.second;
+					auto flowJostats = ps->get_value(false);
+					if(flowJostats != -1||!isnan(flowJostats)) //skip the unrecorded flowJo counts
 					{
-						float min = flowJoCount>myCount?myCount:flowJoCount;
-						float max = flowJoCount<myCount?myCount:flowJoCount;
-						float mean = (min+max)/2;
-						float sd = sqrt((pow((min-mean), 2) + pow((max-mean), 2))/2);
-						boost::math::normal_distribution<> dist(mean,sd);
-						float Q1 = quantile(dist,0.25);
-						float Q3 = quantile(dist,0.75);
-						float IQR = Q3 - Q1;
-						thisCV = IQR/mean;
-						thisTol = 1/max+thisTol;//add the weight of N of cells to make it more robust
-						thisEqual = (thisCV < thisTol);
-		//				cout << Q1 <<":" <<Q3 << " " << thisCV<<endl;
+
+						auto myCount = ps->get_value(true);
+
+						cout<< "\t" << sn << " : " << flowJostats;
+						cout<<"("<<myCount<<") "<< "cv = ";
+
+						bool thisEqual;
+						float thisCV ;
+						float thisTol = tolerance;
+						if(flowJostats == myCount){
+							thisEqual = true;
+							thisCV = 0;
+						}
+						else
+						{
+							float min = flowJostats>myCount?myCount:flowJostats;
+							float max = flowJostats<myCount?myCount:flowJostats;
+							float mean = (min+max)/2;
+							float sd = sqrt((pow((min-mean), 2) + pow((max-mean), 2))/2);
+							boost::math::normal_distribution<> dist(mean,sd);
+							float Q1 = quantile(dist,0.25);
+							float Q3 = quantile(dist,0.75);
+							float IQR = Q3 - Q1;
+							thisCV = IQR/mean;
+							thisTol = 1/max+thisTol;//add the weight of N of cells to make it more robust
+							thisEqual = (thisCV < thisTol);
+			//				cout << Q1 <<":" <<Q3 << " " << thisCV<<endl;
+						}
+						cout << thisCV << " tol = " << thisTol << endl;
+						isEqual.push_back(thisEqual);
 					}
-					cout << thisCV << " tol = " << thisTol << endl;
-					isEqual.push_back(thisEqual);
-				}
-//			}
+			}
 		}
 	}
 }
@@ -251,7 +261,7 @@ void parser_test(testCase & myTest){
 
 	}
 
-	gh_counts(gh, myTest.isEqual, myTest.tolerance, myTest.skipPops);
+	gh_counts(gh, myTest.isEqual, myTest.tolerance, myTest.skipPops, myTest.statType);
 
 	if(isSaveArchive){
 		gs->serialize_pb(archiveName, CytoFileOption::copy);

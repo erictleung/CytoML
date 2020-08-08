@@ -1014,7 +1014,33 @@ public:
 		s->set_value(cnt, WSSTAT);
 		np.setStats("count", s);
 
+		//parse stats
+		xmlXPathObjectPtr resStats=node.xpathInNode("Subpopulations/Statistic");
+		auto nStats = resStats->nodesetval->nodeNr;
+		for(auto i = 0; i < nStats; i++)
+		{
+			wsNode statNode(resStats->nodesetval->nodeTab[i]);
 
+			auto statType=statNode.getProperty("name");
+			if(statType == "Count")
+				continue;//count is already parsed else where
+			if(statType == "Mean")
+			{
+				auto val = statNode.getProperty("value");
+				auto ch = statNode.getProperty("id");
+				popStatsPtr s(new StatsMean(ch));
+				s->set_value(boost::lexical_cast<float>(val), WSSTAT);
+				np.setStats("mean", s);
+
+				if(g_loglevel>=GATE_LEVEL)
+					COUT<<"parsing stats: " + statType <<endl;
+
+			}
+			else
+				continue;//TODO:add more stats support later
+
+		}
+		xmlXPathFreeObject(resStats);
 		try
 		{
 			if(is_parse_gate)np.setGate(getGate(node));
