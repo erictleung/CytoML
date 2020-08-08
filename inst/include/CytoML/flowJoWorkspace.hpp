@@ -1036,6 +1036,18 @@ public:
 					COUT<<"parsing stats: " + statType <<endl;
 
 			}
+			else if(statType == "fj.stat.freqof")
+			{
+				auto val = statNode.getProperty("value");
+				auto anc = statNode.getProperty("ancestor");
+				popStatsPtr s(new StatsFreq(anc));
+				s->set_value(boost::lexical_cast<float>(val), WSSTAT);
+				np.setStats("freqof", s);
+
+				if(g_loglevel>=GATE_LEVEL)
+					COUT<<"parsing stats: " + statType <<endl;
+
+			}
 			else
 				continue;//TODO:add more stats support later
 
