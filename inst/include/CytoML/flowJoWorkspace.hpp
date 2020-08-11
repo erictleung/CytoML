@@ -991,12 +991,25 @@ public:
 		np.setName("root");
 
 		popStatsPtr s(new StatsCount());
-		s->set_value(get_event_count(node),WSSTAT);
+		s->set_value(get_event_count(node),STAT_SOURCE_WS);
 		np.setStats("count", s);
 
 
 	}
+	template<class T>
+	popStatsPtr parse_stats(nodeProperties & np, wsNode statNode, const string &statType)
+	{
+		if(g_loglevel>=GATE_LEVEL)
+			COUT<<"parsing stats: " + statType <<endl;
 
+		auto val = statNode.getProperty("value");
+		auto ch = statNode.getProperty("id");
+
+		popStatsPtr s(new T(ch));
+		s->set_value(boost::lexical_cast<float>(val), STAT_SOURCE_WS);
+
+		return s;
+	}
 	void to_popNode(wsPopNode &node,nodeProperties & np,bool is_parse_gate=false){
 
 
@@ -1011,7 +1024,7 @@ public:
 		//set the empty stats to -1
 		popStatsPtr s(new StatsCount());
 		auto cnt = sCount.empty()?-1:atoi(sCount.c_str());
-		s->set_value(cnt, WSSTAT);
+		s->set_value(cnt, STAT_SOURCE_WS);
 		np.setStats("count", s);
 
 		//parse stats
@@ -1022,27 +1035,38 @@ public:
 			wsNode statNode(resStats->nodesetval->nodeTab[i]);
 
 			auto statType=statNode.getProperty("name");
+			popStatsPtr s1;
 			if(statType == "Count")
 				continue;//count is already parsed else where
 			if(statType == "Mean")
 			{
-				auto val = statNode.getProperty("value");
-				auto ch = statNode.getProperty("id");
-				popStatsPtr s(new StatsMean(ch));
-				s->set_value(boost::lexical_cast<float>(val), WSSTAT);
-				np.setStats("mean", s);
-
-				if(g_loglevel>=GATE_LEVEL)
-					COUT<<"parsing stats: " + statType <<endl;
+				s1 = parse_stats<StatsMean>(np, statNode, statType);
 
 			}
+			else if(statType == "Median")
+			{
+				s1 = parse_stats<StatsMedian>(np, statNode, statType);
+			}
+			else if(statType == "Percentile")
+			{
+				s1 = parse_stats<StatsPercentile>(np, statNode, statType);
+				auto percent = boost::lexical_cast<int>(statNode.getProperty("percent"));
+				dynamic_pointer_cast<StatsPercentile>(s1)->set_percent(percent);
+			}
+//			else if(statType == "SD")
+//			{
+//				parse_stats<StatsMean>(np, statNode, statType);
+//			}
+//			else if(statType == "Median")
+//			{
+//				parse_stats<StatsMean>(np, statNode, statType);
+//			}
 			else if(statType == "fj.stat.freqof")
 			{
 				auto val = statNode.getProperty("value");
 				auto anc = statNode.getProperty("ancestor");
-				popStatsPtr s(new StatsFreq(anc));
-				s->set_value(boost::lexical_cast<float>(val), WSSTAT);
-				np.setStats("freqof", s);
+				s1 = popStatsPtr(new StatsFreq(anc));
+				s1->set_value(boost::lexical_cast<float>(val), STAT_SOURCE_WS);
 
 				if(g_loglevel>=GATE_LEVEL)
 					COUT<<"parsing stats: " + statType <<endl;
@@ -1050,6 +1074,8 @@ public:
 			}
 			else
 				continue;//TODO:add more stats support later
+
+			np.setStats(statType, s1);
 
 		}
 		xmlXPathFreeObject(resStats);

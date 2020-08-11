@@ -155,15 +155,16 @@ void gh_counts(GatingHierarchy & gh,vector<bool> &isEqual
 				for(auto s : stat)
 				{
 
-					auto sn = s.first;
+//					auto sn = s.first;
 					auto ps = s.second;
 					auto flowJostats = ps->get_value(false);
+					auto sn = ps->get_type();
 					if(flowJostats != -1||!isnan(flowJostats)) //skip the unrecorded flowJo counts
 					{
 
 						auto myCount = ps->get_value(true);
 
-						cout<< "\t" << sn << " : " << flowJostats;
+						cout<< "\t" << sn << " " << ps->get_attr() << " : " << flowJostats;
 						cout<<"("<<myCount<<") "<< "cv = ";
 
 						bool thisEqual;
