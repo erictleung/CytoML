@@ -1053,6 +1053,14 @@ public:
 				auto percent = boost::lexical_cast<int>(statNode.getProperty("percent"));
 				dynamic_pointer_cast<StatsPercentile>(s1)->set_percent(percent);
 			}
+			else if(statType == "Geometric Mean")
+			{
+				s1 = parse_stats<StatsGeometricMean>(np, statNode, statType);
+			}
+			else if(statType == "Median Abs Dev")
+			{
+				s1 = parse_stats<StatsMAD>(np, statNode, statType);
+			}
 //			else if(statType == "SD")
 //			{
 //				parse_stats<StatsMean>(np, statNode, statType);
@@ -1074,8 +1082,8 @@ public:
 			}
 			else
 				continue;//TODO:add more stats support later
-
-			np.setStats(statType, s1);
+			if(s1)
+				np.setStats(statType, s1);
 
 		}
 		xmlXPathFreeObject(resStats);
