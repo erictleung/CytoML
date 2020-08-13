@@ -1061,14 +1061,14 @@ public:
 			{
 				s1 = parse_stats<StatsMAD>(np, statNode, statType, "id");
 			}
-//			else if(statType == "SD")
-//			{
-//				parse_stats<StatsMean>(np, statNode, statType);
-//			}
-//			else if(statType == "Median")
-//			{
-//				parse_stats<StatsMean>(np, statNode, statType);
-//			}
+			else if(statType == "SD")
+			{
+				s1 = parse_stats<StatsSD>(np, statNode, statType, "id");
+			}
+			else if(statType == "CV")
+			{
+				s1 = parse_stats<StatsCV>(np, statNode, statType, "id");
+			}
 			else if(statType == "fj.stat.freqof")
 			{
 				s1 = parse_stats<StatsFreq>(np, statNode, statType,"ancestor");
