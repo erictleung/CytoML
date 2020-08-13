@@ -1074,17 +1074,24 @@ public:
 				s1 = parse_stats<StatsFreq>(np, statNode, statType,"ancestor");
 
 			}
-//			else if(statType == "fj.stat.freqof")
-//			{
-//				auto val = statNode.getProperty("value");
-//				auto anc = statNode.getProperty("ancestor");
-//				s1 = popStatsPtr(new StatsFreq(anc));
-//				s1->set_value(boost::lexical_cast<float>(val), STAT_SOURCE_WS);
-//
-//				if(g_loglevel>=GATE_LEVEL)
-//					COUT<<"parsing stats: " + statType <<endl;
-//
-//			}
+			else if(statType == "fj.stat.freqofparent")
+			{
+				s1 = parse_stats<StatsFreqofparent>(np, statNode, statType,"ancestor");
+				auto parent = gh->getNodePath(gh->getParent(u));
+				dynamic_pointer_cast<StatsFreq>(s1)->set_ancestor(parent);
+
+			}
+			else if(statType == "fj.stat.freqofgrandparent")
+			{
+				s1 = parse_stats<StatsFreqofgrandparent>(np, statNode, statType,"ancestor");
+				auto grandparent = gh->getNodePath(gh->getParent(gh->getParent(u)));
+				dynamic_pointer_cast<StatsFreq>(s1)->set_ancestor(grandparent);
+			}
+			else if(statType == "fj.stat.freqoftotal")
+			{
+				s1 = parse_stats<StatsFreqoftotal>(np, statNode, statType,"ancestor");
+				dynamic_pointer_cast<StatsFreq>(s1)->set_ancestor("root");
+			}
 			else
 				continue;//TODO:add more stats support later
 			if(s1)

@@ -129,11 +129,13 @@ public:
 		auto &tree = gh->getTree();
 	 	wsPopNodeSet children =getSubPop(parentNode);
 	 	wsPopNodeSet::iterator it;
-	 		for(it=children.begin();it!=children.end();it++)
-	 		{
-	 			//add boost node
-	 			VertexID curChildID = boost::add_vertex(tree);
-	 			wsPopNode curChildNode=(*it);
+		for(it=children.begin();it!=children.end();it++)
+		{
+				//add boost node
+				VertexID curChildID = boost::add_vertex(tree);
+				//add relation between current node and parent node
+				auto edge = boost::add_edge(parentID,curChildID,tree).first;
+				wsPopNode curChildNode=(*it);
 	 			//convert to the node format that GatingHierarchy understands
 
 	 			//attach the populationNode to the boost node as property
@@ -147,6 +149,8 @@ public:
 	 				}
 	 				else
 	 				{
+	 					boost::remove_edge(edge,tree);
+
 	 					//remove the failed node
 	 					boost::remove_vertex(curChildID,tree);
 	 					COUT << e.what()<< endl;
@@ -179,12 +183,12 @@ public:
 	 			{
 	 				if(g_loglevel>=GATING_SET_LEVEL)
 						COUT<<"skip the node that uses derived parameters:"<<curChild.getName()<<endl;
+ 					boost::remove_edge(edge,tree);
 	 				boost::remove_vertex(curChildID, tree);
 	 			}
 	 			else
 	 			{
-	 				//add relation between current node and parent node
-					boost::add_edge(parentID,curChildID,tree);
+
 					//update the node map for the easy query by pop name
 					//recursively add its descendants
 					addPopulation(gh, curChildID,&curChildNode,isParseGate);
