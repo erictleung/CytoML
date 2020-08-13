@@ -90,7 +90,7 @@ public:
 	 virtual wsPopNodeSet getSubPop(wsNode *)=0;
 	 virtual gatePtr getGate(wsPopNode &)=0;//gate is dynamically allocated within this function,it is currently freed within gate pointer owner object nodeProperties
 	 virtual void to_popNode(wsRootNode &, nodeProperties &)=0;
-	 virtual void to_popNode(wsPopNode &,nodeProperties &,bool isGating)=0;
+	 virtual void to_popNode(wsPopNode &,NODEID u, GatingHierarchyPtr gh, bool isGating)=0;
 	 virtual bool is_fix_slash_in_channel_name(){return false;}
 	 void toArray(string sCalTable, vector<double> &x, vector<double> &y)
 	 {
@@ -123,10 +123,10 @@ public:
 	  * we still can add it as it is because gating path is stored as population names instead of actual VertexID.
 	  * Thus we will deal with the the boolean gate in the actual gating process
 	  */
-	 void addPopulation(populationTree &tree, VertexID parentID ,wsNode * parentNode,bool isParseGate)
+	 void addPopulation(GatingHierarchyPtr gh, VertexID parentID ,wsNode * parentNode,bool isParseGate)
 	 {
 
-
+		auto &tree = gh->getTree();
 	 	wsPopNodeSet children =getSubPop(parentNode);
 	 	wsPopNodeSet::iterator it;
 	 		for(it=children.begin();it!=children.end();it++)
@@ -135,11 +135,11 @@ public:
 	 			VertexID curChildID = boost::add_vertex(tree);
 	 			wsPopNode curChildNode=(*it);
 	 			//convert to the node format that GatingHierarchy understands
-	 			nodeProperties &curChild=tree[curChildID];
+
 	 			//attach the populationNode to the boost node as property
 	 			try
 	 			{
-	 				to_popNode(curChildNode,curChild,isParseGate);
+	 				to_popNode(curChildNode, curChildID, gh,isParseGate);
 	 			}
 	 			catch(logic_error & e){
 	 				if(my_throw_on_error){
@@ -154,6 +154,7 @@ public:
 	 				}
 
 	 			}
+	 			nodeProperties &curChild=gh->getNodeProperty(curChildID);
 	 			if(g_loglevel>=POPULATION_LEVEL)
 	 				COUT<<"node created:"<<curChild.getName()<<endl;
 
@@ -186,7 +187,7 @@ public:
 					boost::add_edge(parentID,curChildID,tree);
 					//update the node map for the easy query by pop name
 					//recursively add its descendants
-					addPopulation(tree, curChildID,&curChildNode,isParseGate);
+					addPopulation(gh, curChildID,&curChildNode,isParseGate);
 
 	 			}
 			}

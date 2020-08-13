@@ -135,7 +135,7 @@ public:
 	 	VertexID pVerID=0;
 	 	nodeProperties & np = tree[0];
 	 	to_popNode(root, np);
-	 	addPopulation(tree, pVerID,&root,is_parse_gate);
+	 	addPopulation(gh, pVerID,&root,is_parse_gate);
 
 	 	return gh;
 
@@ -1010,9 +1010,9 @@ public:
 
 		return s;
 	}
-	void to_popNode(wsPopNode &node,nodeProperties & np,bool is_parse_gate=false){
+	void to_popNode(wsPopNode &node,NODEID u, GatingHierarchyPtr gh,bool is_parse_gate=false){
 
-
+		nodeProperties & np = gh->getTree()[u];
 
 		//add pop name
 		np.setName(node.getProperty(nodePath.attrName).c_str());
