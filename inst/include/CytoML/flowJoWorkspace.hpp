@@ -997,15 +997,15 @@ public:
 
 	}
 	template<class T>
-	popStatsPtr parse_stats(nodeProperties & np, wsNode statNode, const string &statType)
+	popStatsPtr parse_stats(nodeProperties & np, wsNode statNode, const string &statType, const string & attrname)
 	{
 		if(g_loglevel>=GATE_LEVEL)
 			COUT<<"parsing stats: " + statType <<endl;
 
 		auto val = statNode.getProperty("value");
-		auto ch = statNode.getProperty("id");
+		auto attr = statNode.getProperty(attrname);
 
-		popStatsPtr s(new T(ch));
+		popStatsPtr s(new T(attr));
 		s->set_value(boost::lexical_cast<float>(val), STAT_SOURCE_WS);
 
 		return s;
@@ -1040,26 +1040,26 @@ public:
 				continue;//count is already parsed else where
 			if(statType == "Mean")
 			{
-				s1 = parse_stats<StatsMean>(np, statNode, statType);
+				s1 = parse_stats<StatsMean>(np, statNode, statType, "id");
 
 			}
 			else if(statType == "Median")
 			{
-				s1 = parse_stats<StatsMedian>(np, statNode, statType);
+				s1 = parse_stats<StatsMedian>(np, statNode, statType, "id");
 			}
 			else if(statType == "Percentile")
 			{
-				s1 = parse_stats<StatsPercentile>(np, statNode, statType);
+				s1 = parse_stats<StatsPercentile>(np, statNode, statType, "id");
 				auto percent = boost::lexical_cast<int>(statNode.getProperty("percent"));
 				dynamic_pointer_cast<StatsPercentile>(s1)->set_percent(percent);
 			}
 			else if(statType == "Geometric Mean")
 			{
-				s1 = parse_stats<StatsGeometricMean>(np, statNode, statType);
+				s1 = parse_stats<StatsGeometricMean>(np, statNode, statType, "id");
 			}
 			else if(statType == "Median Abs Dev")
 			{
-				s1 = parse_stats<StatsMAD>(np, statNode, statType);
+				s1 = parse_stats<StatsMAD>(np, statNode, statType, "id");
 			}
 //			else if(statType == "SD")
 //			{
@@ -1071,15 +1071,20 @@ public:
 //			}
 			else if(statType == "fj.stat.freqof")
 			{
-				auto val = statNode.getProperty("value");
-				auto anc = statNode.getProperty("ancestor");
-				s1 = popStatsPtr(new StatsFreq(anc));
-				s1->set_value(boost::lexical_cast<float>(val), STAT_SOURCE_WS);
-
-				if(g_loglevel>=GATE_LEVEL)
-					COUT<<"parsing stats: " + statType <<endl;
+				s1 = parse_stats<StatsFreq>(np, statNode, statType,"ancestor");
 
 			}
+//			else if(statType == "fj.stat.freqof")
+//			{
+//				auto val = statNode.getProperty("value");
+//				auto anc = statNode.getProperty("ancestor");
+//				s1 = popStatsPtr(new StatsFreq(anc));
+//				s1->set_value(boost::lexical_cast<float>(val), STAT_SOURCE_WS);
+//
+//				if(g_loglevel>=GATE_LEVEL)
+//					COUT<<"parsing stats: " + statType <<endl;
+//
+//			}
 			else
 				continue;//TODO:add more stats support later
 			if(s1)
