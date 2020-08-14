@@ -1077,6 +1077,10 @@ public:
 			{
 				s1 = parse_stats<StatsRobustCV>(np, statNode, statType, "id");
 			}
+			else if(statType == "Mode")
+			{
+				s1 = parse_stats<StatsMode>(np, statNode, statType, "id");
+			}
 			else if(statType == "fj.stat.freqof")
 			{
 				s1 = parse_stats<StatsFreq>(np, statNode, statType,"ancestor");
