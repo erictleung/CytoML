@@ -992,7 +992,7 @@ public:
 
 		popStatsPtr s(new StatsCount());
 		s->set_value(get_event_count(node),STAT_SOURCE_WS);
-		np.setStats("count", s);
+		np.add_stats(s);
 
 
 	}
@@ -1025,7 +1025,7 @@ public:
 		popStatsPtr s(new StatsCount());
 		auto cnt = sCount.empty()?-1:atoi(sCount.c_str());
 		s->set_value(cnt, STAT_SOURCE_WS);
-		np.setStats("count", s);
+		np.add_stats(s);
 
 		//parse stats
 		xmlXPathObjectPtr resStats=node.xpathInNode("Subpopulations/Statistic");
@@ -1093,9 +1093,9 @@ public:
 				dynamic_pointer_cast<StatsFreq>(s1)->set_ancestor("root");
 			}
 			else
-				continue;//TODO:add more stats support later
+				continue;
 			if(s1)
-				np.setStats(statType, s1);
+				np.add_stats(s1);
 
 		}
 		xmlXPathFreeObject(resStats);
