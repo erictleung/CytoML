@@ -89,7 +89,7 @@ public:
 	 virtual wsRootNode getRoot(wsSampleNode sampleNode)=0;
 	 virtual wsPopNodeSet getSubPop(wsNode *)=0;
 	 virtual gatePtr getGate(wsPopNode &)=0;//gate is dynamically allocated within this function,it is currently freed within gate pointer owner object nodeProperties
-	 virtual void to_popNode(wsRootNode &, nodeProperties &)=0;
+	 virtual void to_popNode(wsRootNode &, GatingHierarchyPtr)=0;
 	 virtual void to_popNode(wsPopNode &,NODEID u, GatingHierarchyPtr gh, bool isGating)=0;
 	 virtual bool is_fix_slash_in_channel_name(){return false;}
 	 void toArray(string sCalTable, vector<double> &x, vector<double> &y)

@@ -131,10 +131,8 @@ public:
 		  * set root node first before recursively add the other nodes
 		  * since root node does not have gates as the others do
 		  */
-	 	populationTree &tree = gh->getTree();
 	 	VertexID pVerID=0;
-	 	nodeProperties & np = tree[0];
-	 	to_popNode(root, np);
+	 	to_popNode(root, gh);
 	 	addPopulation(gh, pVerID,&root,is_parse_gate);
 
 	 	return gh;
@@ -979,7 +977,7 @@ public:
 	/*
 	 *Note: nodeProperties is dynamically allocated and up to caller to free it
 	 */
-	void to_popNode(wsRootNode & node, nodeProperties & np){
+	void to_popNode(wsRootNode & node, GatingHierarchyPtr gh){
 
 
 
@@ -988,14 +986,39 @@ public:
 		 * force the root node name as "root" (it was stored as fcs filenames in some fj ws)
 		 */
 
+		nodeProperties & np = gh->getTree()[0];
 		np.setName("root");
-
-		popStatsPtr s(new StatsCount());
-		s->set_value(get_event_count(node),STAT_SOURCE_WS);
-		np.add_stats(s);
+		np.get_stats().clear();//root node has default stats added thus needs to be cleared first
+		parse_stats(node, 0, gh);
 
 
 	}
+
+	void to_popNode(wsPopNode &node,NODEID u, GatingHierarchyPtr gh,bool is_parse_gate=false){
+
+		nodeProperties & np = gh->getTree()[u];
+
+		//add pop name
+		np.setName(node.getProperty(nodePath.attrName).c_str());
+
+		if(g_loglevel>=POPULATION_LEVEL)
+				COUT<<"parse the population Node:"<<np.getName()<<endl;
+
+		parse_stats(node, u, gh);
+
+		try
+		{
+			if(is_parse_gate)np.setGate(getGate(node));
+		}
+		catch (logic_error & e) {
+
+			throw(logic_error("extracting gate failed:" + np.getName() + "--" + e.what()));
+		}
+
+
+	}
+
+
 	template<class T>
 	popStatsPtr parse_stats(nodeProperties & np, wsNode statNode, const string &statType, const string & attrname)
 	{
@@ -1010,15 +1033,10 @@ public:
 
 		return s;
 	}
-	void to_popNode(wsPopNode &node,NODEID u, GatingHierarchyPtr gh,bool is_parse_gate=false){
+	void parse_stats(wsNode &node,NODEID u, GatingHierarchyPtr gh){
 
 		nodeProperties & np = gh->getTree()[u];
 
-		//add pop name
-		np.setName(node.getProperty(nodePath.attrName).c_str());
-
-		if(g_loglevel>=POPULATION_LEVEL)
-				COUT<<"parse the population Node:"<<np.getName()<<endl;
 		//add pop counts
 		string sCount = node.getProperty("count");
 		//set the empty stats to -1
@@ -1027,6 +1045,7 @@ public:
 		s->set_value(cnt, STAT_SOURCE_WS);
 		np.add_stats(s);
 
+		bool is_freqofparent = false;
 		//parse stats
 		xmlXPathObjectPtr resStats=node.xpathInNode("Subpopulations/Statistic");
 		auto nStats = resStats->nodesetval->nodeNr;
@@ -1091,7 +1110,7 @@ public:
 				s1 = parse_stats<StatsFreqofparent>(np, statNode, statType,"ancestor");
 				auto parent = gh->getNodePath(gh->getParent(u));
 				dynamic_pointer_cast<StatsFreq>(s1)->set_ancestor(parent);
-
+				is_freqofparent = true;
 			}
 			else if(statType == "fj.stat.freqofgrandparent")
 			{
@@ -1111,16 +1130,25 @@ public:
 
 		}
 		xmlXPathFreeObject(resStats);
-		try
+		if(!is_freqofparent)
 		{
-			if(is_parse_gate)np.setGate(getGate(node));
+			//add freqofparent by default if it is not present in statsnode
+
+			VertexID pid;
+			if(u==0)
+			{
+				pid = 0;
+			}
+			else
+			{
+				pid = gh->getParent(u);
+			}
+			popStatsPtr s1(new StatsFreqofparent(gh->getNodePath(pid)));
+			auto p_cnt = gh->getNodeProperty(pid).get_stats("Count", false);
+			s1->set_value(float(cnt)/p_cnt, false);
+			np.add_stats(s1);
+
 		}
-		catch (logic_error & e) {
-
-			throw(logic_error("extracting gate failed:" + np.getName() + "--" + e.what()));
-		}
-
-
 	}
 
 	//used for legacy mac ws
