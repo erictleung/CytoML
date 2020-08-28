@@ -1020,7 +1020,7 @@ public:
 
 
 	template<class T>
-	popStatsPtr parse_stats(nodeProperties & np, wsNode statNode, const string &statType, const string & attrname)
+	popStatsPtr parse_stats_with_attr(wsNode statNode, const string &statType, const string & attrname)
 	{
 		if(g_loglevel>=GATE_LEVEL)
 			COUT<<"parsing stats: " + statType <<endl;
@@ -1029,6 +1029,18 @@ public:
 		auto attr = statNode.getProperty(attrname);
 
 		popStatsPtr s(new T(attr));
+		s->set_value(boost::lexical_cast<float>(val), STAT_SOURCE_WS);
+
+		return s;
+	}
+	template<class T>
+	popStatsPtr parse_stats(wsNode statNode, const string &statType)
+	{
+		if(g_loglevel>=GATE_LEVEL)
+			COUT<<"parsing stats: " + statType <<endl;
+
+		auto val = statNode.getProperty("value");
+		popStatsPtr s(new T());
 		s->set_value(boost::lexical_cast<float>(val), STAT_SOURCE_WS);
 
 		return s;
@@ -1059,69 +1071,64 @@ public:
 				continue;//count is already parsed else where
 			if(statType == "Mean")
 			{
-				s1 = parse_stats<StatsMean>(np, statNode, statType, "id");
+				s1 = parse_stats_with_attr<StatsMean>(statNode, statType, "id");
 
 			}
 			else if(statType == "Median")
 			{
-				s1 = parse_stats<StatsMedian>(np, statNode, statType, "id");
+				s1 = parse_stats_with_attr<StatsMedian>(statNode, statType, "id");
 			}
 			else if(statType == "Percentile")
 			{
-				s1 = parse_stats<StatsPercentile>(np, statNode, statType, "id");
+				s1 = parse_stats_with_attr<StatsPercentile>(statNode, statType, "id");
 				auto percent = boost::lexical_cast<int>(statNode.getProperty("percent"));
 				dynamic_pointer_cast<StatsPercentile>(s1)->set_percent(percent);
 			}
 			else if(statType == "Geometric Mean")
 			{
-				s1 = parse_stats<StatsGeometricMean>(np, statNode, statType, "id");
+				s1 = parse_stats_with_attr<StatsGeometricMean>(statNode, statType, "id");
 			}
 			else if(statType == "Median Abs Dev")
 			{
-				s1 = parse_stats<StatsMAD>(np, statNode, statType, "id");
+				s1 = parse_stats_with_attr<StatsMAD>(statNode, statType, "id");
 			}
 			else if(statType == "SD")
 			{
-				s1 = parse_stats<StatsSD>(np, statNode, statType, "id");
+				s1 = parse_stats_with_attr<StatsSD>(statNode, statType, "id");
 			}
 			else if(statType == "CV")
 			{
-				s1 = parse_stats<StatsCV>(np, statNode, statType, "id");
+				s1 = parse_stats_with_attr<StatsCV>(statNode, statType, "id");
 			}
 			else if(statType == "Robust SD")
 			{
-				s1 = parse_stats<StatsRobustSD>(np, statNode, statType, "id");
+				s1 = parse_stats_with_attr<StatsRobustSD>(statNode, statType, "id");
 			}
 			else if(statType == "Robust CV")
 			{
-				s1 = parse_stats<StatsRobustCV>(np, statNode, statType, "id");
+				s1 = parse_stats_with_attr<StatsRobustCV>(statNode, statType, "id");
 			}
 			else if(statType == "Mode")
 			{
-				s1 = parse_stats<StatsMode>(np, statNode, statType, "id");
+				s1 = parse_stats_with_attr<StatsMode>(statNode, statType, "id");
 			}
 			else if(statType == "fj.stat.freqof")
 			{
-				s1 = parse_stats<StatsFreq>(np, statNode, statType,"ancestor");
+				s1 = parse_stats_with_attr<StatsFreq>(statNode, statType,"ancestor");
 
 			}
 			else if(statType == "fj.stat.freqofparent")
 			{
-				s1 = parse_stats<StatsFreqofparent>(np, statNode, statType,"ancestor");
-				auto parent = gh->getNodePath(gh->getParent(u));
-				dynamic_pointer_cast<StatsFreq>(s1)->set_ancestor(parent);
+				s1 = parse_stats<StatsFreqofparent>(statNode, statType);
 				is_freqofparent = true;
 			}
 			else if(statType == "fj.stat.freqofgrandparent")
 			{
-				s1 = parse_stats<StatsFreqofgrandparent>(np, statNode, statType,"ancestor");
-				auto grandparent = gh->getNodePath(gh->getParent(gh->getParent(u)));
-				dynamic_pointer_cast<StatsFreq>(s1)->set_ancestor(grandparent);
+				s1 = parse_stats<StatsFreqofgrandparent>(statNode, statType);
 			}
 			else if(statType == "fj.stat.freqoftotal")
 			{
-				s1 = parse_stats<StatsFreqoftotal>(np, statNode, statType,"ancestor");
-				dynamic_pointer_cast<StatsFreq>(s1)->set_ancestor("root");
+				s1 = parse_stats<StatsFreqoftotal>(statNode, statType);
 			}
 			else
 				continue;
@@ -1143,7 +1150,7 @@ public:
 			{
 				pid = gh->getParent(u);
 			}
-			popStatsPtr s1(new StatsFreqofparent(gh->getNodePath(pid)));
+			popStatsPtr s1(new StatsFreqofparent());
 			auto p_cnt = gh->getNodeProperty(pid).get_stats("Count").get_value(false);
 			s1->set_value(float(cnt)/p_cnt, false);
 			np.add_stats(s1);

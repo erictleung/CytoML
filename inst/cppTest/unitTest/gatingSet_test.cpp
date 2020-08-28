@@ -262,7 +262,7 @@ void parser_test(testCase & myTest){
 
 	}
 	else
-		gh.compute_stats(0);
+		gh.compute_stats_recursive(0);
 
 	gh_counts(gh, myTest.isEqual, myTest.tolerance, myTest.skipPops, myTest.statType);
 
