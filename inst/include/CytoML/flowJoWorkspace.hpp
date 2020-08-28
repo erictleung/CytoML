@@ -1144,7 +1144,7 @@ public:
 				pid = gh->getParent(u);
 			}
 			popStatsPtr s1(new StatsFreqofparent(gh->getNodePath(pid)));
-			auto p_cnt = gh->getNodeProperty(pid).get_stats("Count", false);
+			auto p_cnt = gh->getNodeProperty(pid).get_stats("Count").get_value(false);
 			s1->set_value(float(cnt)/p_cnt, false);
 			np.add_stats(s1);
 

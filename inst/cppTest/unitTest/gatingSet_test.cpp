@@ -66,7 +66,7 @@ void gh_accessor_test(GatingHierarchy& gh){
 			VertexID u=*it;
 			nodeProperties &node=gh.getNodeProperty(u);
 			cout<<u<<"."<<node.getName()<<":";
-			cout<<node.get_stats("count", false)<<endl;
+			cout<<node.get_stats("count").get_value(false)<<endl;
 			if(u!=ROOTNODE)
 			{
 				gatePtr g=node.getGate();
