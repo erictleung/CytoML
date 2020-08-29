@@ -2,6 +2,33 @@ context("parse workspaces of various flowJo versions ")
 library(data.table)
 path <- "~/rglab/workspace/CytoML/wsTestSuite"
 
+test_that("all stats",{
+  wsFile <- file.path(path, "allstats.wsp")
+  ws <- open_flowjo_xml(wsFile)
+  thispath <- system.file("extdata", package = "flowWorkspaceData")
+  gs <- flowjo_to_gatingset(ws, name=1, path = thispath)
+  gh <- gs[[1]]
+  stattype <- gh_pop_stats_ls(gh)
+  expect_true(setequal(stattype, flowWorkspace:::cyto_stats_supported()))
+  gh_pop_stats_compute(gh)
+  stattype <- stattype[stattype != "Median Abs Dev"]
+  suppressWarnings(res <- gh_pop_stats_compare(gh, type = stattype))
+  expect_equal(res[, cytolib], res[, xml], tol = 3e-2)
+  
+  #test if archive perserve the new stats
+  tmp <- tempfile()
+  save_gs(gs, tmp)  
+  gs <- load_gs(tmp)
+  gh <- gs[[1]]
+  stattype <- gh_pop_stats_ls(gh)
+  expect_true(setequal(stattype, flowWorkspace:::cyto_stats_supported()))
+  gh_pop_stats_compute(gh)
+  stattype <- stattype[stattype != "Median Abs Dev"]
+  suppressWarnings(res <- gh_pop_stats_compare(gh, type = stattype))
+  expect_equal(res[, cytolib], res[, xml], tol = 3e-2)
+  
+})
+
 test_that("verify the extend logic no longer needed for the gate defined in biexp scale from latest flowjo wsp output",{
   wsFile <- file.path(path, "gate_negative_area.wsp")
   ws <- open_flowjo_xml(wsFile)
