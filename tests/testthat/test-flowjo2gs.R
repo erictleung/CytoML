@@ -41,7 +41,7 @@ test_that("parse workspace by loading data from cytoset",{
   invisible(capture_output(gs <- flowjo_to_gatingset(ws, name = 4, path = tempdir(), cytoset = cs)))
   expect_that(gs, is_a("GatingSet"))
   stats <- gh_pop_compare_stats(gs[[1]])  
-  expect_equal(stats[, openCyto.freq], stats[, xml.freq], tol = 3e-3)
+  expect_equal(stats[, cytolib], stats[, xml], tol = 3e-3)
   #cs is shared with gs
   expect_equal(cs_get_uri(cs), cs_get_uri(gs_cyto_data(gs)))
   #cs meta is also modified in place
@@ -85,8 +85,8 @@ test_that("parse without gating",{
       expect_that(gs1, is_a("GatingSet"));
       gh1 <- gs1[[1]]
       
-      thisStats <- gh_pop_compare_stats(gh1)[, list(xml.freq,xml.count, node)]
-      expectStats <- gh_pop_compare_stats(gh)[, list(xml.freq,xml.count, node)]
+      thisStats <- gh_pop_compare_stats(gh1, legacy = TRUE)[, list(xml.count, node)]
+      expectStats <- gh_pop_compare_stats(gh, legacy = TRUE)[, list(xml.count, node)]
       expect_equal(thisStats, expectStats)
       
       #exclude the gates that require extension since the extend_to are different 
