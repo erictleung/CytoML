@@ -5,8 +5,8 @@ path <- "~/rglab/workspace/CytoML//wsTestSuite"
 test_that("gatingset_to_flowjo: forward slash ",{
   thisPath <- file.path(path, "slash_issue_vX")
   gs <- load_gs(file.path(thisPath, "gs"))
-
-  stats.orig <- gh_pop_compare_stats(gs[[1]])
+  gs_pop_stats_compute(gs)
+  stats.orig <- gh_pop_stats_print(gs[[1]], type = "Freqofparent")
   #output to flowJo
   outFile <- tempfile(fileext = ".wsp")
   gatingset_to_flowjo(gs, outFile)
@@ -15,8 +15,8 @@ test_that("gatingset_to_flowjo: forward slash ",{
   #parse it back in
   ws <- open_flowjo_xml(outFile)
   gs1 <- flowjo_to_gatingset(ws, name = 1, path = thisPath, additional.keys = NULL)
-  stats.new <- gh_pop_compare_stats(gs1[[1]])
-  expect_equal(stats.orig[,openCyto.freq], stats.new[,openCyto.freq], tol = 6e-5)
+  stats.new <- gh_pop_stats_print(gs1[[1]], type = "Freqofparent")
+  expect_equal(stats.orig[,value], stats.new[,value], tol = 6e-5)
 })
 
 test_that("OrNode ",{
@@ -24,7 +24,7 @@ test_that("OrNode ",{
   wsFile <- file.path(thisPath, "Test_EW.wsp")
   ws <- open_flowjo_xml(wsFile)
   gs <- flowjo_to_gatingset(ws, name = 1, path = thisPath)
-  stats.orig <- gh_pop_compare_stats(gs[[1]])[, list(openCyto.count, node)]
+  stats.orig <- gh_pop_compare_stats(gs[[1]], legacy = TRUE)[, list(openCyto.count, node)]
   #output to flowJo
   outFile <- tempfile(fileext = ".wsp")
   gatingset_to_flowjo(gs, outFile)
@@ -33,7 +33,7 @@ test_that("OrNode ",{
   #parse it back in
   ws <- open_flowjo_xml(outFile, sampNloc = "sampleNode")
   gs1 <- flowjo_to_gatingset(ws, name = 1, path = thisPath)
-  stats.new <- gh_pop_compare_stats(gs1[[1]])[, list(openCyto.count, node)]
+  stats.new <- gh_pop_compare_stats(gs1[[1]], legacy = TRUE)[, list(openCyto.count, node)]
   expect_equal(stats.orig, stats.new)
 })
 
@@ -43,7 +43,7 @@ test_that("Time gate ",{
   wsFile <- file.path(thisPath, "A01.wsp")
   ws <- open_flowjo_xml(wsFile)
   gs <- flowjo_to_gatingset(ws, name = 1)
-  stats.orig <- gh_pop_compare_stats(gs[[1]])[, list(openCyto.count, node)]
+  stats.orig <- gh_pop_compare_stats(gs[[1]], legacy = TRUE)[, list(openCyto.count, node)]
  #output to flowJo
   outFile <- tempfile(fileext = ".wsp")
   gatingset_to_flowjo(gs, outFile)
@@ -52,7 +52,7 @@ test_that("Time gate ",{
   #parse it back in
   ws <- open_flowjo_xml(outFile, sampNloc = "sampleNode")
   gs1 <- flowjo_to_gatingset(ws, name = 1, path = thisPath)
-  stats.new <- gh_pop_compare_stats(gs1[[1]])[, list(openCyto.count, node)]
+  stats.new <- gh_pop_compare_stats(gs1[[1]], legacy = TRUE)[, list(openCyto.count, node)]
   expect_equal(stats.orig, stats.new)
 })
 
@@ -61,7 +61,7 @@ test_that("Time gate2--when computed timestep is very different from $TIMESTEP "
   wsFile <- file.path(thisPath, "MX1 Analysis VISC.xml")
   ws <- open_flowjo_xml(wsFile)
   capture.output(gs <- flowjo_to_gatingset(ws,name=1))
-  stats.orig <- gh_pop_compare_stats(gs[[1]])[, list(openCyto.count, node)]
+  stats.orig <- gh_pop_compare_stats(gs[[1]], legacy = TRUE)[, list(openCyto.count, node)]
   #output to flowJo
   outFile <- tempfile(fileext = ".wsp")
   gatingset_to_flowjo(gs, outFile)
@@ -70,7 +70,7 @@ test_that("Time gate2--when computed timestep is very different from $TIMESTEP "
   #parse it back in
   ws <- open_flowjo_xml(outFile, sampNloc = "sampleNode")
   gs1 <- flowjo_to_gatingset(ws, name = 1, path = thisPath)
-  stats.new <- gh_pop_compare_stats(gs1[[1]])[, list(openCyto.count, node)]
+  stats.new <- gh_pop_compare_stats(gs1[[1]], legacy = TRUE)[, list(openCyto.count, node)]
   expect_equal(stats.orig, stats.new, tol = 4e-5)
 })
 test_that("EllipsoidGate defined on log-transformed channels ",{
@@ -79,7 +79,7 @@ test_that("EllipsoidGate defined on log-transformed channels ",{
   ws <- open_flowjo_xml(wsFile, sampNloc = "sampleNode")
   capture.output(gs <- flowjo_to_gatingset(ws, name=1, execute = T, subset = "spillover_B2.fcs"))
 
-  stats.orig <- gh_pop_compare_stats(gs[[1]])[, list(openCyto.count, node)]
+  stats.orig <- gh_pop_compare_stats(gs[[1]], legacy = TRUE)[, list(openCyto.count, node)]
   #output to flowJo
   outFile <- tempfile(fileext = ".wsp")
   gatingset_to_flowjo(gs, outFile)
@@ -88,7 +88,7 @@ test_that("EllipsoidGate defined on log-transformed channels ",{
   #parse it back in
   ws <- open_flowjo_xml(outFile, sampNloc = "sampleNode")
   capture.output(gs1 <- flowjo_to_gatingset(ws, name = 1, path = thisPath))
-  stats.new <- gh_pop_compare_stats(gs1[[1]])[, list(openCyto.count, node)]
+  stats.new <- gh_pop_compare_stats(gs1[[1]], legacy = TRUE)[, list(openCyto.count, node)]
   expect_equal(stats.orig, stats.new)
 })
 test_that("GatingSet2flowJo: rectangleGate + boolgate",{
@@ -116,7 +116,7 @@ test_that("gatingset_to_flowjo: no comp + fasinh ",{
 
   ws <- open_flowjo_xml(wsFile, sampNloc = "sampleNode")
   dd <- capture.output(gs <- flowjo_to_gatingset(ws, name = 1, subset = 3, additional.keys = NULL))
-  stats.orig <- gh_pop_compare_stats(gs[[1]])[order(node), list(node, openCyto.count)]
+  stats.orig <- gh_pop_compare_stats(gs[[1]], legacy = TRUE)[order(node), list(node, openCyto.count)]
 
   #output to flowJo
   outFile <- tempfile(fileext = ".wsp")
@@ -126,7 +126,7 @@ test_that("gatingset_to_flowjo: no comp + fasinh ",{
   #parse it back in
   ws <- open_flowjo_xml(outFile, sampNloc = "sampleNode")
   capture.output(gs1 <- flowjo_to_gatingset(ws, name = 1, path = thisPath, additional.keys = NULL))
-  stats.new <- gh_pop_compare_stats(gs1[[1]])[order(node), list(node, openCyto.count)]
+  stats.new <- gh_pop_compare_stats(gs1[[1]], legacy = TRUE)[order(node), list(node, openCyto.count)]
   expect_equal(stats.orig, stats.new)
 })
 
@@ -165,7 +165,7 @@ test_that("gatingset_to_flowjo: automated gates+hidden gate + Infinity + boolean
   # autoplot(gs[[1]], getChildren(gs[[1]], "cd4"))
   # getTotal(gs[[1]], "bool5")
   # plotGate(gs, "bool4", bool = T)
-  stats.orig <- gh_pop_compare_stats(gs[[1]])[, list(openCyto.count, node)]
+  stats.orig <- gh_pop_compare_stats(gs[[1]], legacy = TRUE)[, list(openCyto.count, node)]
   #output to flowJo
   gatingset_to_flowjo(gs, outFile)
   cross_validate(gs, outFile)
@@ -173,7 +173,7 @@ test_that("gatingset_to_flowjo: automated gates+hidden gate + Infinity + boolean
   #parse it back in
   ws <- open_flowjo_xml(outFile)
   gs1 <- flowjo_to_gatingset(ws, name = 1, path = thisPath)
-  stats.new <- gh_pop_compare_stats(gs1[[1]])[, list(openCyto.count, node)]
+  stats.new <- gh_pop_compare_stats(gs1[[1]], legacy = TRUE)[, list(openCyto.count, node)]
   expect_equal(gh_pop_get_stats(gs1[[1]], "Prf-")[[2]], 90423)
   expect_equal(stats.orig, stats.new[-26,], tol = 1.6e-4)
 })

@@ -17,7 +17,7 @@ test_that("transform ungated channel",{
   #gated channel is also at right scale
   expect_equivalent(unlist(range(gs_cyto_data(gs)[[1, "Alexa Fluor 700-A"]])), c(-0.111, 6.262), tol = 2e-3)
   #check gating result
-  expect_equal(gh_pop_get_stats(gs[[2]], "Live")[, count], 3203)
+  expect_equal(gh_pop_stats_print(gs[[2]], "Live")[, value], 3203)
   })
 
 #this test case is somehow very slow which could be due to the big xml with complex gating schemes
@@ -58,11 +58,11 @@ test_that("flowJo to cytobank",{
   sink(NULL, type = "message")
 
 
-  stats.orig <- gs_pop_get_count_fast(gs)
-  stats.new <- gs_pop_get_count_fast(gs1)
-  stats <- merge(stats.orig, stats.new, by = c("name", "Population", "Parent"))
+  stats.orig <- gs_pop_stats_print(gs, type = "Freqofparent")
+  stats.new <- gs_pop_stats_print(gs1, type = "Freqofparent")
+  stats <- merge(stats.orig, stats.new, by = c("sample", "pop"))
 
-  expect_equal(stats[, Count.x/ParentCount.x], stats[, Count.y/ParentCount.y], tol = 2e-3)
+  expect_equal(stats[, value.x], stats[, value.y], tol = 2e-3)
 
 })
 
@@ -169,13 +169,13 @@ test_that("autogating to cytobank--tcell", {
 
   expect_warning(gating(gt, gs))
   gt_toggle_helpergates(gt, gs) #hide the helper gates
-  stats.orig <- gh_pop_compare_stats(gs[[1]])[order(node), list(openCyto.count, node)]
+  stats.orig <- gh_pop_compare_stats(gs[[1]], legacy = TRUE)[order(node), list(openCyto.count, node)]
   #output to cytobank
 
   suppressWarnings(gatingset_to_cytobank(gs, outFile, cytobank.default.scale = F))
   #parse it back in
   suppressWarnings(gs1 <- cytobank_to_gatingset(outFile, file.path(dataDir, "CytoTrol_CytoTrol_1.fcs")))
-  stats.new <- gh_pop_compare_stats(gs1[[1]])[order(node), list(openCyto.count, node)]
+  stats.new <- gh_pop_compare_stats(gs1[[1]], legacy = TRUE)[order(node), list(openCyto.count, node)]
   expect_equal(stats.orig, stats.new, tol = 6e-4)
 
 })

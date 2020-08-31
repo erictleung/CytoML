@@ -29,7 +29,7 @@ test_that("autogating--tcell", {
   expect_warning(gating(gt, gs))
 
   gt_toggle_helpergates(gt, gs) #hide the helper gates
-  stats.orig <- gh_pop_compare_stats(gs[[1]])[, list(openCyto.count, node)]
+  stats.orig <- gh_pop_compare_stats(gs[[1]], legacy = TRUE)[, list(openCyto.count, node)]
   #output to flowJo
   outFile <- tempfile(fileext = ".wsp")
   gatingset_to_flowjo(gs, outFile)
@@ -40,7 +40,7 @@ test_that("autogating--tcell", {
   #parse it back in
   ws <- open_flowjo_xml(outFile)
   gs1 <- flowjo_to_gatingset(ws, name = 1, path = dataDir)
-  stats.new <- gh_pop_compare_stats(gs1[[1]])[, list(openCyto.count, node)]
+  stats.new <- gh_pop_compare_stats(gs1[[1]], legacy = TRUE)[, list(openCyto.count, node)]
   expect_equal(stats.orig, stats.new, tol = 6e-4)
 
   ####################
@@ -53,7 +53,7 @@ test_that("autogating--tcell", {
   gt <- gatingTemplate(gtFile.orig)
   expect_warning(gating(gt, gs))
   gt_toggle_helpergates(gt, gs) #hide the helper gates
-  stats.orig <- gh_pop_compare_stats(gs[[1]])[, list(openCyto.count, node)]
+  stats.orig <- gh_pop_compare_stats(gs[[1]], legacy = TRUE)[, list(openCyto.count, node)]
   #output to flowJo
 
   gatingset_to_flowjo(gs, outFile)
@@ -62,7 +62,7 @@ test_that("autogating--tcell", {
   #parse it back in
   ws <- open_flowjo_xml(outFile)
   gs1 <- flowjo_to_gatingset(ws, name = 1, path = dataDir)
-  stats.new <- gh_pop_compare_stats(gs1[[1]])[, list(openCyto.count, node)]
+  stats.new <- gh_pop_compare_stats(gs1[[1]], legacy = TRUE)[, list(openCyto.count, node)]
   expect_equal(stats.orig, stats.new, tol = 6e-4)
 
 })
