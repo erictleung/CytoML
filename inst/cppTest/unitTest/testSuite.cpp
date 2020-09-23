@@ -306,9 +306,11 @@ BOOST_AUTO_TEST_CASE(Cytotrol_NHLBI)
 	//creating view
 	auto channels = cs.get_channels();
 	//load file with redundant channel
+//	auto uri = "/tmp/t.h5";
+	auto uri = generate_unique_filename(fs_tmp_path(), "", ".h5");
 	auto cv = CytoFrameView(CytoFramePtr(
 			new H5CytoFrame("../wsTestSuite/Cytotrol/NHLBI/CytoTrol_CytoTrol_1_redudant.fcs"
-					, myTest.config.fcs_read_param, "/tmp/t.h5")));
+					, myTest.config.fcs_read_param, uri)));
 	cv.cols_(channels, ColType::channel);
 	cs.getGatingHierarchy(sn)->set_cytoframe_view(cv);
 
