@@ -140,7 +140,7 @@ void gh_gating(GatingHierarchy & gh,bool is_fix_slash_in_channel_name, bool isH5
 void gh_counts(GatingHierarchy & gh,vector<bool> &isEqual
 		, const float tolerance
 		, const vector<VertexID> skipPops
-		, const string & statType = "count"){
+		, const string & statType){
 	cout<<endl<<"flowJo(flowcore) counts after gating"<<endl;
 	VertexID_vec vertices=gh.getVertices(0);
 	for(VertexID_vec::iterator it=vertices.begin();it!=vertices.end();it++)
@@ -159,6 +159,8 @@ void gh_counts(GatingHierarchy & gh,vector<bool> &isEqual
 					auto ps = s.second;
 					auto flowJostats = ps->get_value(false);
 					auto sn = ps->get_type();
+					if(sn!=statType)
+						continue;
 					if(flowJostats != -1||!isnan(flowJostats)) //skip the unrecorded flowJo counts
 					{
 
