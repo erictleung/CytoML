@@ -299,8 +299,9 @@ BOOST_AUTO_TEST_CASE(Cytotrol_NHLBI)
 	myTest.config.keywords_for_uid={};
 	myTest.group_id = 3;
 	myTest.archive="../output/NHLBI/gs/gs";
+	myTest.config.fmt = FileFormat::H5;
 //	g_loglevel = GATE_LEVEL;
-
+	use_ondisk_idx = true;
 //	myTest.cytoset = GatingSet(list_files("../wsTestSuite/flin/fcs", ".fcs"));
 	auto cs = GatingSet(list_files(myTest.config.data_dir, ".fcs"));
 	//creating view
