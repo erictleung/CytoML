@@ -48,13 +48,13 @@ struct testCase{
 		sample_name_location = SAMPLE_NAME_LOCATION::KEY_WORD;
 		xmlParserOption = 1;
 		group_id = 0;
-		statType = "count";
+		statType = "Count";
 	}
 } ;
 
 
 void gh_gating(GatingHierarchy & gh,bool is_fix_slash_in_channel_name, bool isH5, string h5_path,  compensation comp);
-void gh_counts(GatingHierarchy& gh,vector<bool> &isEqual, const float tolerance, const string & statType);
+void gh_counts(GatingHierarchy& gh,vector<bool> &isEqual, const float tolerance, const string & statType="Count");
 void clone_test(testCase myTest);
 //void gs_parse(testCase,unsigned short,bool,bool);
 void parser_test(testCase &);

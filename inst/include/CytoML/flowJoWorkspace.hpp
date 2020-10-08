@@ -172,8 +172,13 @@ public:
 		 }
 		 if(cytoset.size()>0)
 		 {
-			 if(cytoset.begin()->second->get_cytoframe_view_ref().get_uri()=="")
+			 auto cv = cytoset.begin()->second->get_cytoframe_view_ref();
+			 auto cs_type = cv.get_backend_type();
+			 if(cs_type == FileFormat::MEM)
 				throw(domain_error("In-memory cytoset is not supported!"));
+			 auto gs_type = config.fmt;
+			 if(cs_type != gs_type)
+				 throw(domain_error("cytoset backend format is not consistent with the format setting of parse workspace!"));
 		 }
 
 		 string data_dir = config.data_dir;

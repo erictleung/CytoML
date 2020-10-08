@@ -299,16 +299,19 @@ BOOST_AUTO_TEST_CASE(Cytotrol_NHLBI)
 	myTest.config.keywords_for_uid={};
 	myTest.group_id = 3;
 	myTest.archive="../output/NHLBI/gs/gs";
+	myTest.config.fmt = FileFormat::H5;
 //	g_loglevel = GATE_LEVEL;
-
+	use_ondisk_idx = true;
 //	myTest.cytoset = GatingSet(list_files("../wsTestSuite/flin/fcs", ".fcs"));
 	auto cs = GatingSet(list_files(myTest.config.data_dir, ".fcs"));
 	//creating view
 	auto channels = cs.get_channels();
 	//load file with redundant channel
+//	auto uri = "/tmp/t.h5";
+	auto uri = generate_unique_filename(fs_tmp_path(), "", ".h5");
 	auto cv = CytoFrameView(CytoFramePtr(
 			new H5CytoFrame("../wsTestSuite/Cytotrol/NHLBI/CytoTrol_CytoTrol_1_redudant.fcs"
-					, myTest.config.fcs_read_param, "/tmp/t.h5")));
+					, myTest.config.fcs_read_param, uri)));
 	cv.cols_(channels, ColType::channel);
 	cs.getGatingHierarchy(sn)->set_cytoframe_view(cv);
 
