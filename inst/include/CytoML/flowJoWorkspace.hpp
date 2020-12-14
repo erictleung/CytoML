@@ -65,11 +65,14 @@ public:
 	/*
 	  * Constructor that starts from a particular sampleNode from workspace to build a tree
 	  */
-	GatingHierarchyPtr to_GatingHierarchy(const wsSampleNode curSampleNode,bool is_parse_gate,const trans_global_vec & _gTrans)
+	GatingHierarchyPtr to_GatingHierarchy(const wsSampleNode curSampleNode
+			,bool is_parse_gate
+			,const trans_global_vec & _gTrans
+			, CytoCtx ctx)
 	 {
 
 
-		GatingHierarchyPtr gh(new GatingHierarchy());
+		GatingHierarchyPtr gh(new GatingHierarchy(ctx));
 		wsRootNode root=getRoot(curSampleNode);
 		if(g_loglevel>=GATING_HIERARCHY_LEVEL)
 			 COUT<<endl<<"parsing DerivedParameters..."<<endl;
@@ -116,7 +119,7 @@ public:
 	 		{
 	 			trans.addTrans(it->first, it->second);
 	 		}
-	 		gh.reset(new GatingHierarchy(comp, transFlag, trans));
+	 		gh.reset(new GatingHierarchy(comp, transFlag, trans, ctx));
 
 	 	}
 	 	if(g_loglevel>=GATING_HIERARCHY_LEVEL)
@@ -338,7 +341,10 @@ public:
 
 
 			//parse gating tree
-			GatingHierarchyPtr gh = to_GatingHierarchy(sample_info.sample_node,config_const.is_parse_gate,gTrans_const);
+			GatingHierarchyPtr gh = to_GatingHierarchy(sample_info.sample_node
+														,config_const.is_parse_gate
+														,gTrans_const
+														, gs.get_ctx());
 
 			if(g_loglevel>=GATING_HIERARCHY_LEVEL)
 				COUT<<"Gating hierarchy created: "<<uid<<endl;
