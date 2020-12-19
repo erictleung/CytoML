@@ -11,6 +11,7 @@
 #include "workspace.hpp"
 #include "cytolib/trans_group.hpp"
 #include <cytolib/H5CytoFrame.hpp>
+#include <cytolib/io.hpp>
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
@@ -506,7 +507,7 @@ public:
 
 						GsMutexType::scoped_lock lock(h5Mutex);
 					}
-						frptr->write_to_disk(cf_filename, config_const.fmt);
+						io::write_cytoframe(frptr, cf_filename, config_const.fmt);
 						ptr = load_cytoframe(cf_filename, false);
 				}
 
