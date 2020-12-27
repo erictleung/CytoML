@@ -16,7 +16,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
 #include "search_sample.hpp"
-#define TBB_PREVIEW_SERIAL_SUBSET 1
 
 //solve windows build issues
 #ifdef Free
@@ -216,9 +215,12 @@ public:
 
 
 		if(config.num_threads <=1)
-			tbb::serial::parallel_for<int>(0, sample_infos.size(), 1, [&, this](int i){
-				this->parse_sample(sample_infos[i], config, data_dir, cf_dir, gTrans, gs, cytoset);
-			});
+		{
+			for(int i = 0; i < sample_infos.size(); i++)
+			{
+				parse_sample(sample_infos[i], config, data_dir, cf_dir, gTrans, gs, cytoset);
+			}
+		}
 		else
 			tbb::parallel_for<int>(0, sample_infos.size(), 1, [&, this](int i){
 							this->parse_sample(sample_infos[i], config, data_dir, cf_dir, gTrans, gs, cytoset);
