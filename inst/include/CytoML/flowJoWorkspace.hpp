@@ -27,7 +27,6 @@
 
 
 #include <tbb/tbb.h>
-#include "tbb/task_scheduler_init.h"
 #include <tbb/spin_mutex.h>
 using namespace tbb;
 namespace CytoML
@@ -211,8 +210,6 @@ public:
 		 * try to parse each sample
 		 */
 		GatingSet & gs = *gsPtr;
-		tbb::task_scheduler_init init(config.num_threads);
-
 
 		if(config.num_threads <=1)
 		{
@@ -222,9 +219,22 @@ public:
 			}
 		}
 		else
-			tbb::parallel_for<int>(0, sample_infos.size(), 1, [&, this](int i){
+		{
+			tbb::task_arena limited(config.num_threads);        // No more than 2 threads in this arena.
+			tbb::task_group tg;
+
+			limited.execute([&]{
+
+				tg.run([&]{
+					tbb::parallel_for(blocked_range<size_t>(0, sample_infos.size()), [&](const blocked_range<size_t> &r){
+						for (size_t i = r.begin(); i < r.end(); ++i)
 							this->parse_sample(sample_infos[i], config, data_dir, cf_dir, gTrans, gs, cytoset);
+
 						});
+					});
+				tg.wait();
+				});
+		}
 		if(gsPtr->size() == 0)
 			throw(domain_error("No samples in this workspace to parse!"));
 		//keep the cs in sync with backend file
